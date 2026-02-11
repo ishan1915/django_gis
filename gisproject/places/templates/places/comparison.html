@@ -1,0 +1,341 @@
+{% load leaflet_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Comparison Dashboard</title>
+    {% leaflet_js %}
+    {% leaflet_css %}
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; overflow: hidden;height: 100vh; 
+        display: flex; 
+        flex-direction: column; }
+        .header { 
+            height: 60px; 
+            background: #333; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 20px;
+            position:relative
+        }
+        .container { 
+            display: flex; 
+            width: 100vw; 
+            height: calc(100vh - 60px); 
+        }
+        .map-box { 
+            width: 50%; 
+            height: 100%; 
+            border-right: 1px solid #555; 
+            position: relative; 
+        }
+        .label { 
+            position: absolute; 
+            top: 10px; 
+            left: 50px; 
+            z-index: 1000; 
+            background: rgba(255, 255, 255, 0.9); 
+            padding: 8px 12px; 
+            border-radius: 4px; 
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn { 
+            color: white; 
+            text-decoration: none; 
+            background: #28a745; 
+            padding: 8px 15px; 
+            border-radius: 4px; 
+        }
+        .leaflet-container { width: 100%; height: 100%; }
+
+    
+    .comparison-box {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 2000;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        display: flex;
+        gap: 20px;
+        border: 2px solid #333;
+    }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 20px; font-weight: bold; display: block; }
+    .stat-label { font-size: 12px; color: #666; text-transform: uppercase; }
+    .diff-highlight { color: #d9534f;}
+
+    .measure-info {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    display: none; /* Hidden until measuring */
+    font-weight: bold;
+    }
+    .active-measure { background: #ffc107 !important; color: #000 !important; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <span>Survey vs OFC Comparison</span>
+    
+    {% if user.is_staff %}
+        <a href="{% url 'upload_kmz' %}" class="btn">Upload New KMZ</a>
+    {% endif %}
+
+    <button id="measure-btn" class="btn" onclick="toggleMeasure()">📏 Measure Distance</button>
+    <div id="measure-output" class="measure-info">Click two points to measure</div>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
+        <span style="font-size: 0.9em;">User: <strong>{{ user.username }}</strong></span>
+        <form action="{% url 'logout' %}" method="post" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="btn" style="background: #dc3545; border: none;">Logout</button>
+        </form>
+    </div>
+</div>
+
+    <div class="filter-bar" style="background: #eee; padding: 10px; display: flex; gap: 10px; border-bottom: 1px solid #ccc;">
+    <form method="get" style="display: flex; gap: 10px; align-items: center;">
+        
+        <select name="state" style="padding: 5px;">
+            <option value="">-- Select State --</option>
+            {% for s in states %}
+                <option value="{{ s }}" {% if request.GET.state == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="district" style="padding: 5px;">
+            <option value="">-- Select District --</option>
+            {% for d in districts %}
+                <option value="{{ d }}" {% if request.GET.district == d %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="block" style="padding: 5px;">
+            <option value="">-- Select Block --</option>
+            {% for b in blocks %}
+                <option value="{{ b }}" {% if request.GET.block == b %}selected{% endif %}>{{ b }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn" style="background: #007bff; color: white; border: none; padding: 6px 15px; cursor: pointer;">
+            Filter Map
+        </button>
+        
+        <a href="{% url 'comparison_map' %}" style="font-size: 12px; color: #666; text-decoration: none;">Clear All</a>
+    </form>
+</div>
+
+    <div class="container">
+        <div class="map-box">
+            <div class="label" style="color: green;">Physical Survey (Green)</div>
+            {% leaflet_map "map_phys" callback="window.init_phys" %}
+        </div>
+
+        <div class="map-box">
+            <div class="label" style="color: red;">OFC Records (Red)</div>
+            {% leaflet_map "map_ofc" callback="window.init_ofc" %}
+        </div>
+    </div>
+
+    <div class="comparison-box">
+    <div class="stat-item">
+        <span class="stat-value" style="color: green;">{{ phys_km }} km</span>
+        <span class="stat-label">Physical Survey</span>
+    </div>
+    <div style="border-left: 1px solid #ccc;"></div>
+    <div class="stat-item">
+        <span class="stat-value" style="color: red;">{{ ofc_km }} km</span>
+        <span class="stat-label">OFC Records</span>
+    </div>
+    <div style="border-left: 1px solid #ccc;"></div>
+    <div class="stat-item">
+        <span class="stat-value diff-highlight">{{ diff_km }} km</span>
+        <span class="stat-label">Variance (Gap)</span>
+    </div>
+    </div>
+
+   <script type="text/javascript">
+    var physMap, ofcMap;
+    var isMeasuring = false;
+    var measurePoints = [];
+    var tempLine;
+    var tempMarkers = [];
+
+    // Helper to clear existing measurements
+    function resetMeasure() {
+        measurePoints = [];
+        if (tempLine) {
+            if (physMap.hasLayer(tempLine)) physMap.removeLayer(tempLine);
+            if (ofcMap.hasLayer(tempLine)) ofcMap.removeLayer(tempLine);
+        }
+        tempMarkers.forEach(m => {
+            if (physMap.hasLayer(m)) physMap.removeLayer(m);
+            if (ofcMap.hasLayer(m)) ofcMap.removeLayer(m);
+        });
+        tempMarkers = [];
+        document.getElementById('measure-output').innerHTML = "Click two markers to measure";
+    }
+
+    // Toggle Measurement Mode
+    function toggleMeasure() {
+        isMeasuring = !isMeasuring;
+        var btn = document.getElementById('measure-btn');
+        var output = document.getElementById('measure-output');
+        
+        if (isMeasuring) {
+            btn.classList.add('active-measure');
+            output.style.display = 'block';
+            document.body.style.cursor = 'crosshair';
+            resetMeasure();
+        } else {
+            btn.classList.remove('active-measure');
+            output.style.display = 'none';
+            document.body.style.cursor = '';
+            resetMeasure();
+        }
+    }
+
+    // Main Measurement Logic 
+    function handleMeasureClick(e, map) {
+        if (!isMeasuring) return;
+
+        // If we already have a measurement, clear it to start a new one
+        if (measurePoints.length >= 2) resetMeasure();
+
+        var latlng = e.latlng;
+        measurePoints.push(latlng);
+        
+        // Drop orange indicator markers on BOTH maps at the exact coordinate
+        var mPhys = L.circleMarker(latlng, {radius: 6, color: 'orange', fillColor: '#ffa500', fillOpacity: 0.9}).addTo(physMap);
+        var mOfc = L.circleMarker(latlng, {radius: 6, color: 'orange', fillColor: '#ffa500', fillOpacity: 0.9}).addTo(ofcMap);
+        tempMarkers.push(mPhys, mOfc);
+
+        if (measurePoints.length === 2) {
+            var distance = measurePoints[0].distanceTo(measurePoints[1]);
+            var displayDist = distance > 1000 
+                ? (distance / 1000).toFixed(3) + " km" 
+                : distance.toFixed(1) + " meters";
+
+            // Draw the connecting line on both maps
+            tempLine = L.polyline(measurePoints, {color: 'orange', weight: 4, dashArray: '5, 10'}).addTo(physMap);
+            var lineOfc = L.polyline(measurePoints, {color: 'orange', weight: 4, dashArray: '5, 10'}).addTo(ofcMap);
+            
+            // Keep track of the second line for deletion too
+            tempMarkers.push(lineOfc); 
+
+            document.getElementById('measure-output').innerHTML = "<b>Distance:</b> " + displayDist;
+        }
+    }
+
+    
+    function init_phys(map, options) {
+        physMap = map;
+        var group = new L.featureGroup();
+        
+        {% for p in physical_places %}
+            var layer = L.geoJSON({{ p.geom.json|safe }}, {
+                style: function(feature) {
+                    return {
+                        // Use color from KMZ if exists, otherwise use data_type default
+                        color: (feature.properties && feature.properties.stroke) || 
+                               ("{{ p.data_type }}" === "physical" ? "green" : "red"),
+                        weight: 4,
+                        opacity: 0.8
+                    };
+                },
+                onEachFeature: function (feature, layer) {
+                    layer.on('click', function(e) {
+                        if (isMeasuring) {
+                            L.DomEvent.stopPropagation(e); 
+                            handleMeasureClick(e, physMap);
+                        }
+                    });
+                }
+            });
+
+            var name = `{{ p.name|escapejs }}`;
+            var popupContent = `<b>Node:</b> ${name}<br>`;
+            {% if p.description %}
+                var desc = `{{ p.description|escapejs }}`;
+                popupContent += `<hr><div class='kmz-data-table'>${desc}</div>`;
+            {% endif %}
+
+            layer.bindPopup(popupContent, { maxWidth: 400 });
+            layer.addTo(group);
+        {% endfor %}
+        
+        group.addTo(map);
+        if (group.getLayers().length > 0) {
+            map.fitBounds(group.getBounds());
+        } else {
+            map.setView([20.5937, 78.9629], 5);
+        }
+        map.on('click', function(e) { handleMeasureClick(e, map); });
+    }
+
+    function init_ofc(map, options) {
+        ofcMap = map;
+        var group = new L.featureGroup();
+        
+        {% for p in ofc_places %}
+            var layer = L.geoJSON({{ p.geom.json|safe }}, {
+                style: function(feature) {
+                    return {
+                         color: (feature.properties && feature.properties.stroke) || 
+                               ("{{ p.data_type }}" === "physical" ? "green" : "red"),
+                        weight: 3,
+                        opacity: 0.7
+                    };
+                },
+                onEachFeature: function (feature, layer) {
+                    layer.on('click', function(e) {
+                        if (isMeasuring) {
+                            L.DomEvent.stopPropagation(e);
+                            handleMeasureClick(e, ofcMap);
+                        }
+                    });
+                }
+            });
+
+            var name = `{{ p.name|escapejs }}`;
+            var popupContent = `<b>OFC Record:</b> ${name}<br>`;
+            {% if p.description %}
+                var desc = `{{ p.description|escapejs }}`;
+                popupContent += `<hr><div class='kmz-data-table'>${desc}</div>`;
+            {% endif %}
+
+            layer.bindPopup(popupContent, { maxWidth: 400 });
+            layer.addTo(group);
+        {% endfor %}
+
+        {% if deviation_json %}
+            L.geoJSON({{ deviation_json|safe }}, {
+                style: { color: 'orange', weight: 6, opacity: 1, dashArray: '5, 10' }
+            }).addTo(group).bindPopup("<b>Deviation Detected</b>");
+        {% endif %}
+
+        group.addTo(map);
+        if (group.getLayers().length > 0) {
+            map.fitBounds(group.getBounds());
+        } else {
+            map.setView([20.5937, 78.9629], 5);
+        }
+        map.on('click', function(e) { handleMeasureClick(e, map); });
+    }
+</script>
+</body>
+</html>

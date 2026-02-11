@@ -1,0 +1,80 @@
+{% load leaflet_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Location GIS Map</title>
+    {% leaflet_js %}
+    {% leaflet_css %}
+    <style>
+        .leaflet-container { height: 80vh; width: 100%; border: 2px solid #ccc; }
+        .info-panel { padding: 10px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="info-panel">
+        <h1>Global Data View</h1>
+        <p>Showing <b>{{ places.count }}</b> features from all uploaded KMZs.</p>
+        <a href="{% url 'upload_kmz' %}"> + Upload More Data</a>
+    </div>
+<div class="info-panel" style="margin-bottom: 10px;">
+    <h1>GIS Dashboard</h1>
+    <a href="{% url 'upload_kmz' %}" class="btn">Upload KMZ</a> | 
+    <a href="{% url 'export_geojson' %}" class="btn" style="color: blue; font-weight: bold;">
+        Download all as GeoJSON
+    </a>
+</div>
+
+ 
+
+    {% leaflet_map "main" callback="window.map_init" %}
+
+<script type="text/javascript">
+    function map_init(map, options) {
+
+        // Create a group to track all features
+        var allFeatures = new L.featureGroup();
+
+        {% for place in places %}
+            try {
+                var geom = {{ place.geom.json|safe }};
+
+                var layer = L.geoJSON(geom, {
+
+                    // Use color stored in database
+                    style: {
+                        color: "{{ place.line_color|default:'#3388ff' }}",
+                        weight: 3,
+                        opacity: 1
+                    },
+
+                    onEachFeature: function (feature, layer) {
+
+                        var popupContent =
+                            '<div style="max-height:250px; overflow:auto; font-size:12px;">' +
+                            '<h4 style="margin-top:0;">{{ place.name|escapejs }}</h4>' +
+                            '{{ place.description|escapejs|safe }}' +
+                            '</div>';
+
+                        layer.bindPopup(popupContent);
+                    }
+                });
+
+                layer.addTo(allFeatures);
+
+            } catch (e) {
+                console.error("Error loading feature {{ place.id }}:", e);
+            }
+        {% endfor %}
+
+        // Add all features to map
+        allFeatures.addTo(map);
+
+        // Auto zoom to all data
+        if (allFeatures.getLayers().length > 0) {
+            map.fitBounds(allFeatures.getBounds(), { padding: [50, 50] });
+        }
+    }
+</script>
+
+</body>
+</html>

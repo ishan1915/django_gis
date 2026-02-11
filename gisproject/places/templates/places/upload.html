@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload KMZ</title>
+</head>
+<body>
+    <h2>KMZ Data Importer</h2>
+    
+    {% if success %}
+        <p style="color: green;">File processed successfully! <a href="{% url 'map_view' %}">View on Map</a></p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload and Save to PostGIS</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<div style="max-width: 400px; margin: 100px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+    <h2>GIS Dashboard Login</h2>
+    <form method="post">
+        {% csrf_token %}
+        <p><label>Username:</label> <input type="text" name="username" class="form-control"></p>
+        <p><label>Password:</label> <input type="password" name="password" class="form-control"></p>
+        <button type="submit" style="width: 100%; padding: 10px; background: #007bff; color: white; border: none;">Login</button>
+    </form>
+</div>
