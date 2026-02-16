@@ -70,7 +70,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',  # GeoDjango
     'leaflet',             # Leaflet maps
-    'places',              # Your app
+    'places',   
+               # Your app
 ]
 
 MIDDLEWARE = [

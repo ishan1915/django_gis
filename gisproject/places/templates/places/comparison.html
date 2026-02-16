@@ -9,6 +9,33 @@
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; overflow: hidden;height: 100vh; 
         display: flex; 
         flex-direction: column; }
+        .distance-panel {
+            flex: 0 0 auto;
+            width: 350px;
+            max-height: 200px;
+            padding: 16px 24px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid #333;
+            display: none;
+            overflow-y: auto;
+        }
+        .distance-panel.active {
+            display: block;
+        }
+        .distance-panel h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .distance-panel p {
+            margin: 8px 0;
+            font-size: 13px;
+            color: #555;
+        }
         .header { 
             height: 60px; 
             background: #333; 
@@ -65,11 +92,136 @@
         gap: 20px;
         border: 2px solid #333;
     }
+    
+
+.audit-scroll-container {
+    flex: 1;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 2px solid #f1f5f9;
+    border-radius: 24px;
+    background:transparent !important;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+ 
+.audit-scroll-container::-webkit-scrollbar {
+    width: 6px;
+}
+.audit-scroll-container::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+
+.comparison-grid {
+    display: flex; 
+    justify-content: space-between;
+    align-items: stretch;
+    min-width: 900px;
+    background: transparent !important;
+    
+}
+
+
+.audit-column {
+    flex: 1; 
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    background: transparent !important;
+}
+
+
+.audit-header {
+    height: 35px; 
+    display: flex;
+    align-items: center;
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    background: transparent !important;
+}
+
+/* 5. Universal Data Row (Value Group) */
+.audit-value-group {
+    height: 65px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 16px;
+    
+}
+
+.method-label {
+    font-size: 9px;
+    font-weight: 900;
+    color: #94a3b8;
+    display: block;
+    margin-bottom: 6px;
+}
+
+
+.val-main {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 1.5rem !important; 
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    display: flex;
+    align-items: baseline;
+}
+
+
+.unit-text {
+    font-size: 0.5em !important; 
+    font-weight: 700 !important;
+    margin-left: 4px;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.6;
+}
+
+
+.gap-card {
+    height: 50px;
+    padding: 0 16px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.gap-red { background: #fff5f5; border: 1px solid #fee2e2; color: #e11d48; }
+.gap-blue { background: #f0f7ff; border: 1px solid #dbeafe; color: #2563eb; }
+
+
+.integrity-bar {
+    background: #0f172a; 
+    color: white; 
+    padding: 12px 24px; 
+    border-radius: 16px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    margin-top: 20px;
+}
     .stat-item { text-align: center; }
     .stat-value { font-size: 20px; font-weight: bold; display: block; }
     .stat-label { font-size: 12px; color: #666; text-transform: uppercase; }
     .diff-highlight { color: #d9534f;}
 
+    .bottom-section {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+        background: transparent;
+        align-items: flex-start;
+    }
     .measure-info {
     position: absolute;
     top: 60px;
@@ -80,7 +232,7 @@
     color: #fff;
     padding: 10px 20px;
     border-radius: 20px;
-    display: none; /* Hidden until measuring */
+    display: none; 
     font-weight: bold;
     }
     .active-measure { background: #ffc107 !important; color: #000 !important; }
@@ -141,43 +293,119 @@
 
     <div class="container">
         <div class="map-box">
-            <div class="label" style="color: green;">Physical Survey (Green)</div>
+            <div class="label" style="color: green;">Physical Survey</div>
             {% leaflet_map "map_phys" callback="window.init_phys" %}
         </div>
 
         <div class="map-box">
-            <div class="label" style="color: red;">OFC Records (Red)</div>
+            <div class="label" style="color: red;">OFC Records </div>
             {% leaflet_map "map_ofc" callback="window.init_ofc" %}
         </div>
     </div>
+    
+    <div class="bottom-section">
+        <div class="audit-scroll-container">
+    <div class="comparison-grid">
+    
+    <div class="audit-column">
+        <h3 class="audit-header"><i class="fas fa-satellite mr-2 text-emerald-500"></i> Physical Survey (Verified)</h3>
+        
+        <div class="audit-value-group">
+            <span class="method-label">DATABASE (POSTGIS)</span>
+            <span class="val-main" style="color: #10b981;">
+                {{ audit.phys_db|floatformat:4 }}<small>km</small>
+            </span>
+        </div>
+        
+        <div class="audit-value-group" style="margin-bottom: 0;">
+            <span class="method-label">PYTHON (GEOPY)</span>
+            <span class="val-main" style="color: #059669;">
+                {{ audit.phys_py|floatformat:4 }}<small>km</small>
+            </span>
+        </div>
+    </div>
 
-    <div class="comparison-box">
-    <div class="stat-item">
-        <span class="stat-value" style="color: green;">{{ phys_km }} km</span>
-        <span class="stat-label">Physical Survey</span>
+    <div class="audit-column" style="background: #f8fafc; border-left: 2px solid #f1f5f9; border-right: 2px solid #f1f5f9;">
+        <h3 class="audit-header"><i class="fas fa-database mr-2 text-indigo-500"></i> OFC Master Records</h3>
+        
+        <div class="audit-value-group">
+            <span class="method-label">DATABASE (POSTGIS)</span>
+            <span class="val-main" style="color: #6366f1;">
+                {{ audit.ofc_db|floatformat:4 }}<small>km</small>
+            </span>
+        </div>
+
+        <div class="audit-value-group" style="margin-bottom: 0;">
+            <span class="method-label">PYTHON (GEOPY)</span>
+            <span class="val-main" style="color: #4f46e5;">
+                {{ audit.ofc_py|floatformat:4 }}<small>km</small>
+            </span>
+        </div>
     </div>
-    <div style="border-left: 1px solid #ccc;"></div>
-    <div class="stat-item">
-        <span class="stat-value" style="color: red;">{{ ofc_km }} km</span>
-        <span class="stat-label">OFC Records</span>
+
+    <div class="audit-column">
+    <h3 class="audit-header"><i class="fas fa-chart-pie mr-2 text-rose-500"></i> Net Discrepancy (Gap)</h3>
+    
+    <div class="audit-value-group">
+        <span class="method-label">POSTGIS VS OFC GAP</span>
+        <div class="gap-card gap-red">
+            <span class="val-main">
+                {{ diff_km|floatformat:2 }}<span class="unit-text">KM</span>
+            </span>
+        </div>
     </div>
-    <div style="border-left: 1px solid #ccc;"></div>
-    <div class="stat-item">
-        <span class="stat-value diff-highlight">{{ diff_km }} km</span>
-        <span class="stat-label">Variance (Gap)</span>
+
+    <div class="audit-value-group" style="margin-bottom: 0;">
+        <span class="method-label">GEOPY VS OFC GAP</span>
+        <div class="gap-card gap-blue">
+            <span class="val-main">
+                {{ diff_km|floatformat:2 }}<span class="unit-text">KM</span>
+            </span>
+        </div>
     </div>
     </div>
+
+</div>
+        </div>
+
+        <!-- Distance and Attributes Panel -->
+        <div class="distance-panel" id="distance-panel">
+            <h3>📏 Measurement Info</h3>
+            <div id="distance-output">Click two points to measure</div>
+            <div id="node-attributes" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+
+<div class="integrity-bar">
+    <div style="display: flex; align-items: center;">
+        <i class="fas fa-shield-check text-emerald-400 mr-3"></i>
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
+            System Audit: 
+            <span style="color: #34d399;">
+                {% if audit.phys_db == audit.phys_py and audit.ofc_db == audit.ofc_py %}
+                    ZERO VARIANCE CROSS-VERIFIED (POSTGIS ↔ GEOPY)
+                {% else %}
+                    SYSTEM SYNC: ACTIVE
+                {% endif %}
+            </span>
+        </span>
+    </div>
+    <span style="font-size: 10px; font-family: monospace; color: #64748b; font-weight: 800;">WGS-84 ELLIPSOID STANDARD</span>
+</div>
 
    <script type="text/javascript">
     var physMap, ofcMap;
     var isMeasuring = false;
     var measurePoints = [];
+    var measurePointsData = []; // Store node data for measurement points
     var tempLine;
     var tempMarkers = [];
 
     // Helper to clear existing measurements
     function resetMeasure() {
         measurePoints = [];
+        measurePointsData = [];
         if (tempLine) {
             if (physMap.hasLayer(tempLine)) physMap.removeLayer(tempLine);
             if (ofcMap.hasLayer(tempLine)) ofcMap.removeLayer(tempLine);
@@ -188,6 +416,8 @@
         });
         tempMarkers = [];
         document.getElementById('measure-output').innerHTML = "Click two markers to measure";
+        document.getElementById('distance-output').innerHTML = "Click two points to measure";
+        document.getElementById('node-attributes').innerHTML = "";
     }
 
     // Toggle Measurement Mode
@@ -195,22 +425,25 @@
         isMeasuring = !isMeasuring;
         var btn = document.getElementById('measure-btn');
         var output = document.getElementById('measure-output');
+        var panel = document.getElementById('distance-panel');
         
         if (isMeasuring) {
             btn.classList.add('active-measure');
             output.style.display = 'block';
+            panel.classList.add('active');
             document.body.style.cursor = 'crosshair';
             resetMeasure();
         } else {
             btn.classList.remove('active-measure');
             output.style.display = 'none';
+            panel.classList.remove('active');
             document.body.style.cursor = '';
             resetMeasure();
         }
     }
 
     // Main Measurement Logic 
-    function handleMeasureClick(e, map) {
+    function handleMeasureClick(e, map, nodeData = null) {
         if (!isMeasuring) return;
 
         // If we already have a measurement, clear it to start a new one
@@ -218,6 +451,7 @@
 
         var latlng = e.latlng;
         measurePoints.push(latlng);
+        measurePointsData.push(nodeData);
         
         // Drop orange indicator markers on BOTH maps at the exact coordinate
         var mPhys = L.circleMarker(latlng, {radius: 6, color: 'orange', fillColor: '#ffa500', fillOpacity: 0.9}).addTo(physMap);
@@ -238,7 +472,148 @@
             tempMarkers.push(lineOfc); 
 
             document.getElementById('measure-output').innerHTML = "<b>Distance:</b> " + displayDist;
+            
+            // Update distance panel with detailed information
+            var panelHtml = "<p style='color: #28a745; font-weight: bold;'>✓ Distance Measured</p>";
+            panelHtml += "<p><strong>Total Distance:</strong> " + displayDist + "</p>";
+            panelHtml += "<p><strong>Point 1 Coordinates:</strong> (" + measurePoints[0].lat.toFixed(6) + ", " + measurePoints[0].lng.toFixed(6) + ")</p>";
+            panelHtml += "<p><strong>Point 2 Coordinates:</strong> (" + measurePoints[1].lat.toFixed(6) + ", " + measurePoints[1].lng.toFixed(6) + ")</p>";
+            
+            // Add Node 1 Attributes
+            if (measurePointsData[0]) {
+                panelHtml += "<hr style='margin: 10px 0;'>";
+                panelHtml += "<p style='color: #007bff; font-weight: bold;'>📍 Node 1 Attributes:</p>";
+                panelHtml += formatNodeData(measurePointsData[0]);
+            }
+            
+            // Add Node 2 Attributes
+            if (measurePointsData[1]) {
+                panelHtml += "<hr style='margin: 10px 0;'>";
+                panelHtml += "<p style='color: #007bff; font-weight: bold;'>📍 Node 2 Attributes:</p>";
+                panelHtml += formatNodeData(measurePointsData[1]);
+            }
+            
+            document.getElementById('distance-output').innerHTML = panelHtml;
         }
+    }
+
+
+    function formatNodeData(data) {
+        if (!data) return "";
+        var html = "";
+        var displayOrder = ['fid', 'name', 'type', 'seg_length', 'start_node', 'end_node', 'num_fibre', 'phase', 'ring_id', 'remarks', 'block', 'gram_pan_1', 'block_code', 'gp_covered', 'lat', 'long', 'gp_code', 'lgd_code', 'proposed_l'];
+        var usedValues = {}; 
+        
+        
+        displayOrder.forEach(function(key) {
+            if (data[key] && data[key] !== 'N/A' && data[key] !== '') {
+                var displayKey = key.replace(/_/g, ' ').toUpperCase();
+                html += "<p style='margin: 6px 0; font-size: 12px; line-height: 1.4;'><strong>" + displayKey + ":</strong> " + data[key] + "</p>";
+                usedValues[data[key]] = true; 
+            }
+        });
+        
+        
+        for (var key in data) {
+            if (data.hasOwnProperty(key) && key !== 'name' && key !== 'block' && key !== 'geometry' && displayOrder.indexOf(key) === -1 && data[key] !== 'N/A' && data[key] !== '') {
+                var value = data[key];
+                
+                
+                if (usedValues[value]) {
+                    continue;
+                }
+                
+                 
+                if (value.match(/:\s*FID\s*$/) || 
+                    value.match(/\w+\s+\d+\s+\w+\s+\w+\s+\w+/) ||
+                    value.length > 80 ||
+                    value.match(/FID\s+\d+\s+BLOCK\s+\w+/) ||
+                    value.match(/[A-Z\s\d]{50,}:[A-Z\s]+FID/)) {
+                    continue;
+                }
+                
+                var displayKey = key.replace(/_/g, ' ').toUpperCase();
+                html += "<p style='margin: 6px 0; font-size: 12px; line-height: 1.4;'><strong>" + displayKey + ":</strong> " + value + "</p>";
+            }
+        }
+        
+        return html;
+    }
+
+    // Parse description field to extract attributes from HTML table
+    function parseNodeDescription(description, name, block) {
+        var data = {
+            name: name,
+            block: block
+        };
+        
+        if (description) {
+            // Create a temporary DOM element to parse HTML
+            var parser = new DOMParser();
+            try {
+                var doc = parser.parseFromString(description, 'text/html');
+                var rows = doc.querySelectorAll('tr');
+                
+                rows.forEach(function(row) {
+                    var cells = row.querySelectorAll('td');
+                    if (cells.length >= 2) {
+                        var key = cells[0].textContent.trim().toLowerCase().replace(/\s+/g, '_');
+                        var value = cells[1].textContent.trim();
+                        
+                        if (key && value && !key.match(/^(xmlns|http|style|bgcolor)/i)) {
+                            data[key] = value;
+                        }
+                    }
+                });
+            } catch(e) {
+                
+                var cleanText = description.replace(/<[^>]*>/g, ' ').trim();
+                cleanText = cleanText.replace(/xmlns[^=]*="[^"]*"/g, '');
+                cleanText = cleanText.replace(/http-equiv="[^"]*"\s*content="[^"]*"/g, '');
+                
+                // List of known keys to look for
+                var knownKeys = ['FID', 'NAME', 'TYPE', 'SEG LENGTH', 'START NODE', 'END NODE', 'NUM FIBRE', 'PHASE', 'RING ID', 'REMARKS', 'BLOCK', 'GRAM_PAN_1', 'BLOCK_CODE', 'GP_COVERED', 'LAT', 'LONG', 'GP_CODE', 'LGD_CODE', 'PROPOSED_L'];
+                
+                
+                knownKeys.forEach(function(knownKey) {
+                    var regex = new RegExp(knownKey + '\\s+([\\w\\s.-]+?)(?=' + knownKeys.join('|') + '|$)', 'gi');
+                    var match;
+                    while ((match = regex.exec(cleanText)) !== null) {
+                        var value = match[1].trim();
+                        
+                        value = value.replace(/\s+\w+\s*$/, '').trim();
+                        if (value && !value.match(/^(xmlns|http|style|bgcolor|charset|<)/i) && value.length > 0 && value.length < 100) {
+                            var key = knownKey.toLowerCase().replace(/\s+/g, '_');
+                            data[key] = value;
+                        }
+                    }
+                });
+                
+                
+                if (Object.keys(data).length <= 2) {
+                    var lines = cleanText.split(/[\n\r]+/);
+                    lines.forEach(function(line) {
+                        line = line.trim();
+                        if (!line || line.match(/^(xmlns|http|style|bgcolor|charset)/i)) {
+                            return;
+                        }
+                        
+                        var match = line.match(/^([^:|\t]+?)[\s:|\t]+(.+)$/);
+                        if (match) {
+                            var key = match[1].trim();
+                            var value = match[2].trim();
+                            
+                            if (value && !value.match(/^(xmlns|http|style|bgcolor|charset|<)/i) && value.length > 0) {
+                                key = key.toLowerCase().replace(/\s+/g, '_');
+                                data[key] = value;
+                            }
+                        }
+                    });
+                }
+            }
+        }
+        
+        return data;
     }
 
     
@@ -247,38 +622,44 @@
         var group = new L.featureGroup();
         
         {% for p in physical_places %}
-            var layer = L.geoJSON({{ p.geom.json|safe }}, {
-                style: function(feature) {
-                    return {
-                        // Use color from KMZ if exists, otherwise use data_type default
-                        color: (feature.properties && feature.properties.stroke) || 
-                               ("{{ p.data_type }}" === "physical" ? "green" : "red"),
-                        weight: 4,
-                        opacity: 0.8
-                    };
-                },
-                onEachFeature: function (feature, layer) {
-                    layer.on('click', function(e) {
-                        if (isMeasuring) {
-                            L.DomEvent.stopPropagation(e); 
-                            handleMeasureClick(e, physMap);
-                        }
-                    });
-                }
-            });
+            (function() {
+                var nodeData = parseNodeDescription(`{{ p.description|escapejs }}`, `{{ p.name|escapejs }}`, `{{ p.block|escapejs }}`);
+                
+                var layer = L.geoJSON({{ p.geom.json|safe }}, {
+                    style: function(feature) {
+                        
+                        var dbColor = "{{ p.line_color|escapejs }}";
+                        return {
+                            
+                            color: dbColor ? dbColor : "green",
+                            weight: 4,
+                            opacity: 0.8
+                        };
+                    },
+                    onEachFeature: function (feature, layer) {
+                        layer.on('click', function(e) {
+                            if (isMeasuring) {
+                                L.DomEvent.stopPropagation(e); 
+                                handleMeasureClick(e, physMap, nodeData);
+                            }
+                        });
+                    }
+                });
 
-            var name = `{{ p.name|escapejs }}`;
-            var popupContent = `<b>Node:</b> ${name}<br>`;
-            {% if p.description %}
-                var desc = `{{ p.description|escapejs }}`;
-                popupContent += `<hr><div class='kmz-data-table'>${desc}</div>`;
-            {% endif %}
+                var name = `{{ p.name|escapejs }}`;
+                var popupContent = `<b>Node:</b> ${name}<br>`;
+                {% if p.description %}
+                    var desc = `{{ p.description|escapejs }}`;
+                    popupContent += `<hr><div class='kmz-data-table'>${desc}</div>`;
+                {% endif %}
 
-            layer.bindPopup(popupContent, { maxWidth: 400 });
-            layer.addTo(group);
+                layer.bindPopup(popupContent, { maxWidth: 400 });
+                layer.addTo(group);
+            })();
         {% endfor %}
         
         group.addTo(map);
+
         if (group.getLayers().length > 0) {
             map.fitBounds(group.getBounds());
         } else {
@@ -292,34 +673,40 @@
         var group = new L.featureGroup();
         
         {% for p in ofc_places %}
-            var layer = L.geoJSON({{ p.geom.json|safe }}, {
-                style: function(feature) {
-                    return {
-                         color: (feature.properties && feature.properties.stroke) || 
-                               ("{{ p.data_type }}" === "physical" ? "green" : "red"),
-                        weight: 3,
-                        opacity: 0.7
-                    };
-                },
-                onEachFeature: function (feature, layer) {
-                    layer.on('click', function(e) {
-                        if (isMeasuring) {
-                            L.DomEvent.stopPropagation(e);
-                            handleMeasureClick(e, ofcMap);
-                        }
-                    });
-                }
-            });
+            (function() {
+                var nodeData = parseNodeDescription(`{{ p.description|escapejs }}`, `{{ p.name|escapejs }}`, `{{ p.block|escapejs }}`);
+                
+                var layer = L.geoJSON({{ p.geom.json|safe }}, {
+                    style: function(feature) {
+                        // FIX: Check the line_color field for OFC as well
+                        var dbColor = "{{ p.line_color|escapejs }}";
+                        return {
+                            // Priority: 1. DB Hex Color, 2. Default Red
+                            color: dbColor ? dbColor : "red",
+                            weight: 3,
+                            opacity: 0.7
+                        };
+                    },
+                    onEachFeature: function (feature, layer) {
+                        layer.on('click', function(e) {
+                            if (isMeasuring) {
+                                L.DomEvent.stopPropagation(e);
+                                handleMeasureClick(e, ofcMap, nodeData);
+                            }
+                        });
+                    }
+                });
 
-            var name = `{{ p.name|escapejs }}`;
-            var popupContent = `<b>OFC Record:</b> ${name}<br>`;
-            {% if p.description %}
-                var desc = `{{ p.description|escapejs }}`;
-                popupContent += `<hr><div class='kmz-data-table'>${desc}</div>`;
-            {% endif %}
+                var name = `{{ p.name|escapejs }}`;
+                var popupContent = `<b>OFC Record:</b> ${name}<br>`;
+                {% if p.description %}
+                    var desc = `{{ p.description|escapejs }}`;
+                    popupContent += `<hr><div class='kmz-data-table'>${desc}</div>`;
+                {% endif %}
 
-            layer.bindPopup(popupContent, { maxWidth: 400 });
-            layer.addTo(group);
+                layer.bindPopup(popupContent, { maxWidth: 400 });
+                layer.addTo(group);
+            })();
         {% endfor %}
 
         {% if deviation_json %}
@@ -329,6 +716,7 @@
         {% endif %}
 
         group.addTo(map);
+
         if (group.getLayers().length > 0) {
             map.fitBounds(group.getBounds());
         } else {

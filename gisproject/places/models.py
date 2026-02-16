@@ -11,6 +11,7 @@ class Place(models.Model):
     source_filename = models.CharField(max_length=255, blank=True, null=True)
     data_type = models.CharField(max_length=20, choices=DATA_TYPES, default='physical')
     geom = models.GeometryField(srid=4326,dim=3)
+    line_color = models.CharField(max_length=10,  blank=True, null=True)
     state = models.CharField(max_length=100, db_index=True) #def
     district = models.CharField(max_length=100, db_index=True)
     block = models.CharField(max_length=100, db_index=True)
