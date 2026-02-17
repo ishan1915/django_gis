@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 import sys
+import dj_database_url
 
 # 1. Dynamically find the Conda Library path
 conda_prefix = os.environ.get('CONDA_PREFIX')
@@ -56,7 +57,12 @@ SECRET_KEY = 'django-insecure-xv%o285^da#z3!lc^io$ht^7+2a@u(jti!2*&9(p-dw!h+vkt0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "django-gis.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
+
 
 
 # Application definition
@@ -107,7 +113,7 @@ WSGI_APPLICATION = 'gisproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
+"""DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": "gis_db",
@@ -116,6 +122,12 @@ DATABASES = {
         "HOST": "localhost",
         "PORT": "5432",
     }
+}"""
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL"),
+        engine="django.contrib.gis.db.backends.postgis",
+    )
 }
 
 # Password validation
