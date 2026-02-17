@@ -222,7 +222,11 @@ def upload_kmz(request):
                                     geom = GEOSGeometry(geom.wkb, srid=4326)
 
                                 f_name = feature.get('Name')
-                                f_id = feature.get('id') or str(feature.fid)
+                                f_id = str(feature.fid)
+                                if 'id' in feature.fields:
+                                    val = feature.get('id')
+                                    if val:
+                                       f_id = str(val)
 
                                 # Match XML placemark block
                                 block_xml = placemark_blocks[idx] if idx < len(placemark_blocks) else ""
