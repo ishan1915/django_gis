@@ -56,7 +56,12 @@ SECRET_KEY = 'django-insecure-xv%o285^da#z3!lc^io$ht^7+2a@u(jti!2*&9(p-dw!h+vkt0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "django-gis.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
+
 
 
 # Application definition
